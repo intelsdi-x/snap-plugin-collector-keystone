@@ -17,7 +17,7 @@ package types
 // Endpoint represents OpenStack endpoint
 type Endpoint struct {
 	ServiceID    string `json:"service_id"`
-	ID           string `json:"json:"id""`
+	ID           string `json:"id"`
 	URL          string `json:"url"`
 	Name         string `json:"name"`
 	Region       string `json:"region"`

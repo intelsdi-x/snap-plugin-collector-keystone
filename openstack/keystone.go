@@ -100,9 +100,9 @@ func GetAllServices(provider *gophercloud.ProviderClient) ([]types.Service, erro
 
 	for _, s := range srvs {
 		serviceList = append(serviceList, types.Service{
-			ID:          s.ID,
-			Name:        s.Name,
-			Type:        s.Type,
+			ID:   s.ID,
+			Name: s.Name,
+			Type: s.Type,
 			//Description: s.Description,
 		})
 	}
@@ -130,12 +130,12 @@ func GetAllEndpoints(provider *gophercloud.ProviderClient) ([]types.Endpoint, er
 
 	for _, endpt := range endpts {
 		endpointList = append(endpointList, types.Endpoint{
-			ID:           endpt.ID,
-			ServiceID:    endpt.ServiceID,
-			URL:          endpt.URL,
-			Region:       endpt.Region,
+			ID:        endpt.ID,
+			ServiceID: endpt.ServiceID,
+			URL:       endpt.URL,
+			Region:    endpt.Region,
 			//Availability: endpt.Availability,
-			Name:         endpt.Name,
+			Name: endpt.Name,
 		})
 	}
 

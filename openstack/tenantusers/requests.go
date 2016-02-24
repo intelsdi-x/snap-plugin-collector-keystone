@@ -21,9 +21,8 @@ import (
 
 const (
 	tenantPath = "tenants"
-	usersPath = "users"
+	usersPath  = "users"
 )
-
 
 // Get will retrieve the volume type with the provided ID. To extract the volume
 // type from the result, call the Extract method on the GetResult.

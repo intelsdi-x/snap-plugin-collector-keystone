@@ -37,5 +37,3 @@ func Authenticate(endpoint, user, password, tenant string) (*gophercloud.Provide
 
 	return provider, nil
 }
-
-
