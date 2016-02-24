@@ -56,7 +56,7 @@ func GetAllTenants(provider *gophercloud.ProviderClient) ([]types.Tenant, error)
 func GetAllUsers(provider *gophercloud.ProviderClient) ([]types.User, error) {
 	userList := []types.User{}
 
-	client := openstack.NewIdentityV3(provider)
+	client := openstack.NewIdentityV2(provider)
 
 	pager := users.List(client)
 	page, err := pager.AllPages()
