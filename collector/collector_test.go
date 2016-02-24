@@ -1,5 +1,3 @@
-// +build unit
-
 /*
 http://www.apache.org/licenses/LICENSE-2.0.txt
 Copyright 2016 Intel Corporation
@@ -14,26 +12,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package openstack
+package collector
 
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 
 	th "github.com/rackspace/gophercloud/testhelper"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/intelsdi-x/snap-plugin-collector-keystone/types"
+	"github.com/intelsdi-x/snap/control/plugin"
+	"github.com/intelsdi-x/snap/core/cdata"
+	"github.com/intelsdi-x/snap/core/ctypes"
+
+	str "github.com/intelsdi-x/snap-plugin-utilities/strings"
 )
 
-type KeystoneSuite struct {
+type CollectorSuite struct {
 	suite.Suite
 	Token string
 }
 
-func (s *KeystoneSuite) SetupSuite() {
+func (s *CollectorSuite) SetupSuite() {
 	th.SetupHTTP()
 	registerRoot()
 	registerAuthentication(s)
@@ -41,139 +44,96 @@ func (s *KeystoneSuite) SetupSuite() {
 	registerUsers(s)
 	registerServices(s)
 	registerEndpoints(s)
-	registerTenantUsers(s)
+	registerAdminUsers(s)
+	registerDemoUsers(s)
 }
 
-func (suite *KeystoneSuite) TearDownSuite() {
+func (suite *CollectorSuite) TearDownSuite() {
 	th.TeardownHTTP()
 }
 
 func TestRunSuite(t *testing.T) {
-	cinderTestSuite := new(KeystoneSuite)
-	suite.Run(t, cinderTestSuite)
+	keystoneTestSuite := new(CollectorSuite)
+	suite.Run(t, keystoneTestSuite)
 }
 
-func (s *KeystoneSuite) TestGetAllTenants() {
-	Convey("Given list of OpenStack tenants is requested", s.T(), func() {
+func (s *CollectorSuite) TestGetMetricTypes() {
+	Convey("Given config with enpoint, user and password defined", s.T(), func() {
+		cfg := setupCfg(th.Endpoint(), "me", "secret", "admin")
 
-		Convey("When authentication is required", func() {
-			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant")
-			th.AssertNoErr(s.T(), err)
-			th.CheckEquals(s.T(), s.Token, provider.TokenID)
+		Convey("When GetMetricTypes() is called", func() {
+			collector := New()
+			mts, err := collector.GetMetricTypes(cfg)
 
-			Convey("and GetAllTenants called", func() {
+			Convey("Then no error should be reported", func() {
+				So(err, ShouldBeNil)
+			})
 
-				tenantList, err := GetAllTenants(provider)
+			Convey("and proper metric types are returned", func() {
+				metricNames := []string{}
+				for _, m := range mts {
+					metricNames = append(metricNames, strings.Join(m.Namespace(), "/"))
+				}
 
-				Convey("Then number of tenants is returned", func() {
-					So(len(tenantList), ShouldEqual, 2)
-				})
-
-				Convey("and no error reported", func() {
-					So(err, ShouldBeNil)
-				})
+				So(len(mts), ShouldEqual, 6)
+				So(str.Contains(metricNames, "intel/openstack/keystone/demo/users_count"), ShouldBeTrue)
+				So(str.Contains(metricNames, "intel/openstack/keystone/admin/users_count"), ShouldBeTrue)
+				So(str.Contains(metricNames, "intel/openstack/keystone/total_tenants_count"), ShouldBeTrue)
+				So(str.Contains(metricNames, "intel/openstack/keystone/total_users_count"), ShouldBeTrue)
+				So(str.Contains(metricNames, "intel/openstack/keystone/total_endpoints_count"), ShouldBeTrue)
+				So(str.Contains(metricNames, "intel/openstack/keystone/total_services_count"), ShouldBeTrue)
 			})
 		})
 	})
 }
 
-func (s *KeystoneSuite) TestGetAllUsers() {
-	Convey("Given list of OpenStack users is requested", s.T(), func() {
+func (s *CollectorSuite) TestCollectMetrics() {
+	Convey("Given set of metric types", s.T(), func() {
+		cfg := setupCfg(th.Endpoint(), "me", "secret", "admin")
+		m1 := plugin.PluginMetricType{
+			Namespace_: []string{"intel", "openstack", "keystone", "demo", "users_count"},
+			Config_:    cfg.ConfigDataNode}
+		m2 := plugin.PluginMetricType{
+			Namespace_: []string{"intel", "openstack", "keystone", "total_services_count"},
+			Config_:    cfg.ConfigDataNode}
 
-		Convey("When authentication is required", func() {
-			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant")
-			th.AssertNoErr(s.T(), err)
-			th.CheckEquals(s.T(), s.Token, provider.TokenID)
+		Convey("When ColelctMetrics() is called", func() {
+			collector := New()
 
-			Convey("and GetAllUsers called", func() {
+			mts, err := collector.CollectMetrics([]plugin.PluginMetricType{m1, m2})
 
-				userList, err := GetAllUsers(provider)
+			Convey("Then no error should be reported", func() {
+				So(err, ShouldBeNil)
+			})
 
-				Convey("Then number of users is returned", func() {
-					So(len(userList), ShouldEqual, 3)
-				})
+			Convey("and proper metric types are returned", func() {
+				metricNames := map[string]interface{}{}
+				for _, m := range mts {
+					ns := strings.Join(m.Namespace(), "/")
+					metricNames[ns] = m.Data()
+				}
+				fmt.Println(metricNames)
+				So(len(mts), ShouldEqual, 2)
 
-				Convey("and no error reported", func() {
-					So(err, ShouldBeNil)
-				})
+				val, ok := metricNames["intel/openstack/keystone/demo/users_count"]
+				So(ok, ShouldBeTrue)
+				So(val, ShouldEqual, 3)
+
+				val, ok = metricNames["intel/openstack/keystone/total_services_count"]
+				So(ok, ShouldBeTrue)
+				So(val, ShouldEqual, 4)
 			})
 		})
 	})
 }
 
-func (s *KeystoneSuite) TestGetAllServices() {
-	Convey("Given list of OpenStack services is requested", s.T(), func() {
-
-		Convey("When authentication is required", func() {
-			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant")
-			th.AssertNoErr(s.T(), err)
-			th.CheckEquals(s.T(), s.Token, provider.TokenID)
-
-			Convey("and GetAllServices called", func() {
-
-				serviceList, err := GetAllServices(provider)
-
-				Convey("Then number of services is returned", func() {
-					So(len(serviceList), ShouldEqual, 4)
-				})
-
-				Convey("and no error reported", func() {
-					So(err, ShouldBeNil)
-				})
-			})
-		})
-	})
-}
-
-func (s *KeystoneSuite) TestGetAllEndpoints() {
-	Convey("Given list of OpenStack endpoints is requested", s.T(), func() {
-
-		Convey("When authentication is required", func() {
-			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant")
-			th.AssertNoErr(s.T(), err)
-			th.CheckEquals(s.T(), s.Token, provider.TokenID)
-
-			Convey("and GetAllEndpoints called", func() {
-
-				endpointList, err := GetAllEndpoints(provider)
-
-				Convey("Then number of endpoints is returned", func() {
-					So(len(endpointList), ShouldEqual, 4)
-				})
-
-				Convey("and no error reported", func() {
-					So(err, ShouldBeNil)
-				})
-			})
-		})
-	})
-}
-
-func (s *KeystoneSuite) TestGetTenantUsers() {
-	Convey("Given list of OpenStack users for particular tenant is requested", s.T(), func() {
-
-		Convey("When authentication is required", func() {
-			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant")
-			th.AssertNoErr(s.T(), err)
-			th.CheckEquals(s.T(), s.Token, provider.TokenID)
-
-			Convey("and GetUsersPerTenant called", func() {
-				tenants := []types.Tenant{types.Tenant{ID: "11111", Name: "demo"}}
-				tenantUsers, err := GetUsersPerTenant(provider, tenants)
-
-				Convey("Then number of users for tenants is returned", func() {
-					So(len(tenantUsers), ShouldEqual, 1)
-					val, ok := tenantUsers["demo"]
-					So(ok, ShouldBeTrue)
-					So(val, ShouldEqual, 3)
-				})
-
-				Convey("and no error reported", func() {
-					So(err, ShouldBeNil)
-				})
-			})
-		})
-	})
+func setupCfg(endpoint, user, password, tenant string) plugin.PluginConfigType {
+	node := cdata.NewNode()
+	node.AddItem("admin_endpoint", ctypes.ConfigValueStr{Value: endpoint})
+	node.AddItem("admin_user", ctypes.ConfigValueStr{Value: user})
+	node.AddItem("admin_password", ctypes.ConfigValueStr{Value: password})
+	node.AddItem("admin_tenant", ctypes.ConfigValueStr{Value: tenant})
+	return plugin.PluginConfigType{ConfigDataNode: node}
 }
 
 func registerRoot() {
@@ -203,7 +163,7 @@ func registerRoot() {
 	})
 }
 
-func registerAuthentication(s *KeystoneSuite) {
+func registerAuthentication(s *CollectorSuite) {
 	s.Token = "2ed210f132564f21b178afb197ee99e3"
 	th.Mux.HandleFunc("/v2.0/tokens", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `
@@ -233,7 +193,7 @@ func registerAuthentication(s *KeystoneSuite) {
 	})
 }
 
-func registerTenants(s *KeystoneSuite) {
+func registerTenants(s *CollectorSuite) {
 	th.Mux.HandleFunc("/v2.0/tenants", func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(s.T(), r, "GET")
 		th.TestHeader(s.T(), r, "X-Auth-Token", s.Token)
@@ -247,13 +207,13 @@ func registerTenants(s *KeystoneSuite) {
 					{
 						"description": "Test tenat",
 						"enabled": true,
-						"id": "111111",
+						"id": "11111",
 						"name": "demo"
 					},
 					{
 						"description": "admin tenant",
 						"enabled": true,
-						"id": "222222",
+						"id": "22222",
 						"name": "admin"
 					}
 				],
@@ -263,7 +223,7 @@ func registerTenants(s *KeystoneSuite) {
 	})
 }
 
-func registerUsers(s *KeystoneSuite) {
+func registerUsers(s *CollectorSuite) {
 	th.Mux.HandleFunc("/v2.0/users", func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(s.T(), r, "GET")
 		th.TestHeader(s.T(), r, "X-Auth-Token", s.Token)
@@ -301,7 +261,7 @@ func registerUsers(s *KeystoneSuite) {
 	})
 }
 
-func registerServices(s *KeystoneSuite) {
+func registerServices(s *CollectorSuite) {
 	th.Mux.HandleFunc("/v3/services", func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(s.T(), r, "GET")
 		th.TestHeader(s.T(), r, "X-Auth-Token", s.Token)
@@ -362,7 +322,7 @@ func registerServices(s *KeystoneSuite) {
 	})
 }
 
-func registerEndpoints(s *KeystoneSuite) {
+func registerEndpoints(s *CollectorSuite) {
 	th.Mux.HandleFunc("/v3/endpoints", func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(s.T(), r, "GET")
 		th.TestHeader(s.T(), r, "X-Auth-Token", s.Token)
@@ -426,7 +386,7 @@ func registerEndpoints(s *KeystoneSuite) {
 	})
 }
 
-func registerTenantUsers(s *KeystoneSuite) {
+func registerDemoUsers(s *CollectorSuite) {
 	th.Mux.HandleFunc("/v2.0/tenants/11111/users", func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(s.T(), r, "GET")
 		th.TestHeader(s.T(), r, "X-Auth-Token", s.Token)
@@ -457,6 +417,30 @@ func registerTenantUsers(s *KeystoneSuite) {
 						"id": "659a62b0da35495e85b08b11e5b6f092",
 						"name": "cinder",
 						"username": "cinder"
+					}
+				]
+			}
+	`)
+	})
+}
+
+func registerAdminUsers(s *CollectorSuite) {
+	th.Mux.HandleFunc("/v2.0/tenants/22222/users", func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(s.T(), r, "GET")
+		th.TestHeader(s.T(), r, "X-Auth-Token", s.Token)
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		fmt.Fprintf(w, `
+			{
+				"users": [
+					{
+						"email": "heat@localhost",
+						"enabled": true,
+						"id": "27b6b98022314a6b9c4524efaedf4694",
+						"name": "heat",
+						"username": "heat"
 					}
 				]
 			}
