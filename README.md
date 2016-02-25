@@ -25,14 +25,14 @@ It can be used in- as well as out-of-bands.
  - OpenStack deployment available
 
 ### Installation
-#### Download <keystone> plugin binary:
+#### Download keystone plugin binary:
 You can get the pre-built binaries for your OS and architecture at snap's [Github Releases](https://github.com/intelsdi-x/snap/releases) page.
 
 #### To build the plugin binary:
-Fork https://github.com/intelsdi-x/snap-plugin-collector-<keystone>
+Fork https://github.com/intelsdi-x/snap-plugin-collector-keystone
 Clone repo into `$GOPATH/src/github/intelsdi-x/`:
 ```
-$ git clone https://github.com/<yourGithubID>/snap-plugin-collector-<keystone>
+$ git clone https://github.com/<yourGithubID>/snap-plugin-collector-keystone
 ```
 Build the plugin by running make in repo:
 ```
@@ -47,11 +47,11 @@ This plugin has the ability to gather the following metrics:
 
 Namespace | Data Type | Description (optional)
 ----------|-----------|-----------------------
-intel/openstack/keystone/\<tenant_name\>/users_count | | Total number of users for given tenant
-intel/openstack/keystone/total_tenants_count | | Total number of tenants
-intel/openstack/keystone/total_users_count | | Total number of users 
-intel/openstack/keystone/total_endpoints_count | | Total number of endpoints
-intel/openstack/keystone/total_services_count | | Total number of services
+intel/openstack/keystone/\<tenant_name\>/users_count | int | Total number of users for given tenant
+intel/openstack/keystone/total_tenants_count | int | Total number of tenants
+intel/openstack/keystone/total_users_count | int | Total number of users 
+intel/openstack/keystone/total_endpoints_count | int | Total number of endpoints
+intel/openstack/keystone/total_services_count | int | Total number of services
 
 ### snap's Global Config
 Global configuration files are described in snap's documentation. You have to add section "keystone" in "collector" section and then specify following options:
@@ -63,7 +63,7 @@ Global configuration files are described in snap's documentation. You have to ad
 ### Examples
 It is not suggested to set interval below 20 seconds. This may lead to overloading Keystone with authentication requests. 
 
-Example task manifest to use <keystone> plugin:
+Example task manifest to use keystone plugin:
 ```
 {
     "version": 1,
