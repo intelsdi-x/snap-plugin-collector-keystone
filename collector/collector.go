@@ -1,6 +1,6 @@
 /*
 http://www.apache.org/licenses/LICENSE-2.0.txt
-Copyright 2015 Intel Corporation
+Copyright 2016 Intel Corporation
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -71,11 +71,10 @@ func (c *collector) GetMetricTypes(cfg plugin.PluginConfigType) ([]plugin.Plugin
 	tenant := items["admin_tenant"].(string)
 
 	if c.provider == nil {
-		provider, err := openstackintel.Authenticate(endpoint, user, password, tenant)
+		c.provider, err = openstackintel.Authenticate(endpoint, user, password, tenant)
 		if err != nil {
 			return nil, err
 		}
-		c.provider = provider
 	}
 
 	// retrieve list of all available tenants for provided endpoint, user and password
@@ -116,22 +115,43 @@ func (c *collector) CollectMetrics(metricTypes []plugin.PluginMetricType) ([]plu
 	tenant := items["admin_tenant"].(string)
 
 	if c.provider == nil {
-		provider, err := openstackintel.Authenticate(endpoint, user, password, tenant)
+		c.provider, err = openstackintel.Authenticate(endpoint, user, password, tenant)
 		if err != nil {
 			return nil, err
 		}
-		c.provider = provider
 	}
 
 	var done sync.WaitGroup
-	done.Add(4)
+	errCh := make(chan error, 4)
 
+	// collect services and endpoint only once
+	if c.endpoints == nil {
+		done.Add(1)
+		go func() {
+			var err error
+			if c.endpoints, err = openstackintel.GetAllEndpoints(c.provider); err != nil {
+				errCh <- err
+			}
+			done.Done()
+		}()
+	}
+	if c.services == nil {
+		done.Add(1)
+		go func() {
+			var err error
+			if c.services, err = openstackintel.GetAllServices(c.provider); err != nil {
+				errCh <- err
+			}
+			done.Done()
+		}()
+	}
+
+	done.Add(2)
 	tenantList := []types.Tenant{}
 	go func() {
 		var err error
-		tenantList, err = openstackintel.GetAllTenants(c.provider)
-		if err != nil {
-			panic(err)
+		if tenantList, err = openstackintel.GetAllTenants(c.provider); err != nil {
+			errCh <- err
 		}
 		done.Done()
 	}()
@@ -139,37 +159,22 @@ func (c *collector) CollectMetrics(metricTypes []plugin.PluginMetricType) ([]plu
 	userList := []types.User{}
 	go func() {
 		var err error
-		userList, err = openstackintel.GetAllUsers(c.provider)
-		if err != nil {
-			panic(err)
+		if userList, err = openstackintel.GetAllUsers(c.provider); err != nil {
+			errCh <- err
 		}
 		done.Done()
 	}()
 
-	servicesList := []types.Service{}
-	go func() {
-		var err error
-		servicesList, err = openstackintel.GetAllServices(c.provider)
-		if err != nil {
-			panic(err)
-		}
-		done.Done()
-	}()
-
-	endpointList := []types.Endpoint{}
-	go func() {
-		var err error
-		endpointList, err = openstackintel.GetAllEndpoints(c.provider)
-		if err != nil {
-			panic(err)
-		}
-		done.Done()
-	}()
 	done.Wait()
+	close(errCh)
+
+	if err = <-errCh; err != nil {
+		return nil, err
+	}
 
 	tenantUsers, err := openstackintel.GetUsersPerTenant(c.provider, tenantList)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	metrics := []plugin.PluginMetricType{}
@@ -189,9 +194,9 @@ func (c *collector) CollectMetrics(metricTypes []plugin.PluginMetricType) ([]plu
 			case "total_users_count":
 				metric.Data_ = len(userList)
 			case "total_services_count":
-				metric.Data_ = len(servicesList)
+				metric.Data_ = len(c.services)
 			case "total_endpoints_count":
-				metric.Data_ = len(endpointList)
+				metric.Data_ = len(c.endpoints)
 			}
 		} else {
 			tenantName := namespace[3]
@@ -214,7 +219,7 @@ func (c *collector) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 	return cp, nil
 }
 
-// Commenting exported items is very important
+// Meta returns plugin meta data
 func Meta() *plugin.PluginMeta {
 	return plugin.NewPluginMeta(
 		name,
@@ -226,6 +231,8 @@ func Meta() *plugin.PluginMeta {
 }
 
 type collector struct {
-	host     string
-	provider *gophercloud.ProviderClient
+	host      string
+	provider  *gophercloud.ProviderClient
+	endpoints []types.Endpoint
+	services  []types.Service
 }

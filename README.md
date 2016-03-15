@@ -17,12 +17,13 @@ snap plugin for collecting metrics from OpenStack Keystone module.
 ## Getting Started
 
 Plugin collects metrics by communicating with OpenStack by REST API.
-It can be used in- as well as out-of-bands. 
+It can run locally on the host, or in proxy mode (communicating with the host via HTTP(S)). 
 
 ### System Requirements
 
  - Linux
  - OpenStack deployment available
+ - Supports Keystone V2 and V3 authorization APIs
 
 ### Installation
 #### Download keystone plugin binary:
@@ -45,7 +46,7 @@ This builds the plugin in `/build/rootfs`
 ### Collected Metrics
 This plugin has the ability to gather the following metrics:
 
-Namespace | Data Type | Description (optional)
+Namespace | Data Type | Description
 ----------|-----------|-----------------------
 intel/openstack/keystone/\<tenant_name\>/users_count | int | Total number of users for given tenant
 intel/openstack/keystone/total_tenants_count | int | Total number of tenants
