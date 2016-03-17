@@ -1,0 +1,45 @@
+/*
+http://www.apache.org/licenses/LICENSE-2.0.txt
+Copyright 2016 Intel Corporation
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package tenantusers
+
+import (
+	"github.com/mitchellh/mapstructure"
+	"github.com/rackspace/gophercloud"
+)
+
+// Image represents an Glance image
+type TenantUser struct {
+	Email    string `json:"email" mapstructure:"email"`
+	Enabled  bool   `json:"enabled" mapstructure:"enabled"`
+	Name     string `json:"name" mapstructure:"name"`
+	Username string `json:"username" mapstructure:"username"`
+}
+
+// GetResult represents the result of a get operation.
+type GetResult struct {
+	gophercloud.Result
+}
+
+// Extract will get the Volume object out of the commonResult object.
+func (r GetResult) Extract() ([]TenantUser, error) {
+
+	var resp struct {
+		TenantUsers []TenantUser `json:"users" mapstructure:"users"`
+	}
+
+	err := mapstructure.Decode(r.Body, &resp)
+
+	return resp.TenantUsers, err
+}
