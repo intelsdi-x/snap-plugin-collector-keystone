@@ -227,6 +227,7 @@ func Meta() *plugin.PluginMeta {
 		plgtype,
 		[]string{plugin.SnapGOBContentType},
 		[]string{plugin.SnapGOBContentType},
+		plugin.RoutingStrategy(plugin.StickyRouting),
 	)
 }
 
