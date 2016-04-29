@@ -17,14 +17,7 @@
         }
       }
     },
-    "publisher": {
-      "influxdb": {
-        "all": {
-          "server": "xyz.local",
-          "password": "$password"
-        }
-      }
-    },
+    "publisher": {},
     "processor": {}
   }
 }
