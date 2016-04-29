@@ -34,7 +34,7 @@ import (
 
 const (
 	name    = "keystone"
-	version = 1
+	version = 2
 	plgtype = plugin.CollectorPluginType
 	vendor  = "intel"
 	fs      = "openstack"
