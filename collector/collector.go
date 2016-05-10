@@ -15,7 +15,6 @@ limitations under the License.
 package collector
 
 import (
-	"os"
 	"sync"
 	"time"
 
@@ -49,12 +48,7 @@ var keystoneMetrics = []string{
 
 // New creates initialized instance of Glance collector
 func New() *collector {
-	host, err := os.Hostname()
-	if err != nil {
-		host = "localhost"
-	}
-
-	return &collector{host: host}
+	return &collector{}
 }
 
 // GetMetricTypes returns list of available metric types
@@ -181,14 +175,7 @@ func (c *collector) CollectMetrics(metricTypes []plugin.MetricType) ([]plugin.Me
 	metrics := []plugin.MetricType{}
 	for _, metricType := range metricTypes {
 		namespace := metricType.Namespace().Strings()
-		tags := metricType.Tags()
-		if tags == nil {
-			tags = map[string]string{}
-		}
-		tags["hostname"] = c.host
-
 		metric := plugin.MetricType{
-			Tags_:      tags,
 			Timestamp_: time.Now(),
 			Namespace_: metricType.Namespace(),
 		}
@@ -238,7 +225,6 @@ func Meta() *plugin.PluginMeta {
 }
 
 type collector struct {
-	host      string
 	provider  *gophercloud.ProviderClient
 	endpoints []types.Endpoint
 	services  []types.Service
