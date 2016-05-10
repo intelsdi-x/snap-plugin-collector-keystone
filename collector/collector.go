@@ -15,7 +15,6 @@ limitations under the License.
 package collector
 
 import (
-	"os"
 	"sync"
 	"time"
 
@@ -25,15 +24,16 @@ import (
 	"github.com/intelsdi-x/snap/control/plugin/cpolicy"
 
 	"github.com/intelsdi-x/snap-plugin-utilities/config"
-	str "github.com/intelsdi-x/snap-plugin-utilities/strings"
+	"github.com/intelsdi-x/snap-plugin-utilities/str"
 
 	openstackintel "github.com/intelsdi-x/snap-plugin-collector-keystone/openstack"
 	"github.com/intelsdi-x/snap-plugin-collector-keystone/types"
+	"github.com/intelsdi-x/snap/core"
 )
 
 const (
 	name    = "keystone"
-	version = 1
+	version = 2
 	plgtype = plugin.CollectorPluginType
 	vendor  = "intel"
 	fs      = "openstack"
@@ -48,19 +48,14 @@ var keystoneMetrics = []string{
 
 // New creates initialized instance of Glance collector
 func New() *collector {
-	host, err := os.Hostname()
-	if err != nil {
-		host = "localhost"
-	}
-
-	return &collector{host: host}
+	return &collector{}
 }
 
 // GetMetricTypes returns list of available metric types
 // It returns error in case retrieval was not successful
-func (c *collector) GetMetricTypes(cfg plugin.PluginConfigType) ([]plugin.PluginMetricType, error) {
-	mts := []plugin.PluginMetricType{}
-	items, err := config.GetConfigItems(cfg, []string{"admin_endpoint", "admin_user", "admin_password", "admin_tenant"})
+func (c *collector) GetMetricTypes(cfg plugin.ConfigType) ([]plugin.MetricType, error) {
+	mts := []plugin.MetricType{}
+	items, err := config.GetConfigItems(cfg, "admin_endpoint", "admin_user", "admin_password", "admin_tenant")
 	if err != nil {
 		return nil, err
 	}
@@ -85,16 +80,16 @@ func (c *collector) GetMetricTypes(cfg plugin.PluginConfigType) ([]plugin.Plugin
 
 	// Generate available namespace from tenants (user counts per tenant)
 	for _, tenant := range allTenants {
-		mts = append(mts, plugin.PluginMetricType{
-			Namespace_: []string{vendor, fs, name, tenant.Name, "users_count"},
+		mts = append(mts, plugin.MetricType{
+			Namespace_: core.NewNamespace(vendor, fs, name, tenant.Name, "users_count"),
 			Config_:    cfg.ConfigDataNode,
 		})
 	}
 
 	// Generate available namespace from keystone metrics
 	for _, keystoneMetric := range keystoneMetrics {
-		mts = append(mts, plugin.PluginMetricType{
-			Namespace_: []string{vendor, fs, name, keystoneMetric},
+		mts = append(mts, plugin.MetricType{
+			Namespace_: core.NewNamespace(vendor, fs, name, keystoneMetric),
 			Config_:    cfg.ConfigDataNode,
 		})
 	}
@@ -103,8 +98,8 @@ func (c *collector) GetMetricTypes(cfg plugin.PluginConfigType) ([]plugin.Plugin
 
 // CollectMetrics returns list of requested metric values
 // It returns error in case retrieval was not successful
-func (c *collector) CollectMetrics(metricTypes []plugin.PluginMetricType) ([]plugin.PluginMetricType, error) {
-	items, err := config.GetConfigItems(metricTypes[0], []string{"admin_endpoint", "admin_user", "admin_password", "admin_tenant"})
+func (c *collector) CollectMetrics(metricTypes []plugin.MetricType) ([]plugin.MetricType, error) {
+	items, err := config.GetConfigItems(metricTypes[0], "admin_endpoint", "admin_user", "admin_password", "admin_tenant")
 	if err != nil {
 		return nil, err
 	}
@@ -177,14 +172,12 @@ func (c *collector) CollectMetrics(metricTypes []plugin.PluginMetricType) ([]plu
 		return nil, err
 	}
 
-	metrics := []plugin.PluginMetricType{}
+	metrics := []plugin.MetricType{}
 	for _, metricType := range metricTypes {
-		namespace := metricType.Namespace()
-
-		metric := plugin.PluginMetricType{
-			Source_:    c.host,
+		namespace := metricType.Namespace().Strings()
+		metric := plugin.MetricType{
 			Timestamp_: time.Now(),
-			Namespace_: namespace,
+			Namespace_: metricType.Namespace(),
 		}
 
 		if str.Contains(keystoneMetrics, namespace[3]) {
@@ -232,7 +225,6 @@ func Meta() *plugin.PluginMeta {
 }
 
 type collector struct {
-	host      string
 	provider  *gophercloud.ProviderClient
 	endpoints []types.Endpoint
 	services  []types.Service

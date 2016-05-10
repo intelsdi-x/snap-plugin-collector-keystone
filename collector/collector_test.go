@@ -1,5 +1,3 @@
-// +build unit
-
 /*
 http://www.apache.org/licenses/LICENSE-2.0.txt
 Copyright 2016 Intel Corporation
@@ -19,7 +17,6 @@ package collector
 import (
 	"fmt"
 	"net/http"
-	"strings"
 	"testing"
 
 	th "github.com/rackspace/gophercloud/testhelper"
@@ -27,10 +24,11 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/intelsdi-x/snap/control/plugin"
+	"github.com/intelsdi-x/snap/core"
 	"github.com/intelsdi-x/snap/core/cdata"
 	"github.com/intelsdi-x/snap/core/ctypes"
 
-	str "github.com/intelsdi-x/snap-plugin-utilities/strings"
+	"github.com/intelsdi-x/snap-plugin-utilities/str"
 )
 
 type CollectorSuite struct {
@@ -74,16 +72,16 @@ func (s *CollectorSuite) TestGetMetricTypes() {
 			Convey("and proper metric types are returned", func() {
 				metricNames := []string{}
 				for _, m := range mts {
-					metricNames = append(metricNames, strings.Join(m.Namespace(), "/"))
+					metricNames = append(metricNames, m.Namespace().String())
 				}
 
 				So(len(mts), ShouldEqual, 6)
-				So(str.Contains(metricNames, "intel/openstack/keystone/demo/users_count"), ShouldBeTrue)
-				So(str.Contains(metricNames, "intel/openstack/keystone/admin/users_count"), ShouldBeTrue)
-				So(str.Contains(metricNames, "intel/openstack/keystone/total_tenants_count"), ShouldBeTrue)
-				So(str.Contains(metricNames, "intel/openstack/keystone/total_users_count"), ShouldBeTrue)
-				So(str.Contains(metricNames, "intel/openstack/keystone/total_endpoints_count"), ShouldBeTrue)
-				So(str.Contains(metricNames, "intel/openstack/keystone/total_services_count"), ShouldBeTrue)
+				So(str.Contains(metricNames, "/intel/openstack/keystone/demo/users_count"), ShouldBeTrue)
+				So(str.Contains(metricNames, "/intel/openstack/keystone/admin/users_count"), ShouldBeTrue)
+				So(str.Contains(metricNames, "/intel/openstack/keystone/total_tenants_count"), ShouldBeTrue)
+				So(str.Contains(metricNames, "/intel/openstack/keystone/total_users_count"), ShouldBeTrue)
+				So(str.Contains(metricNames, "/intel/openstack/keystone/total_endpoints_count"), ShouldBeTrue)
+				So(str.Contains(metricNames, "/intel/openstack/keystone/total_services_count"), ShouldBeTrue)
 			})
 		})
 	})
@@ -92,17 +90,17 @@ func (s *CollectorSuite) TestGetMetricTypes() {
 func (s *CollectorSuite) TestCollectMetrics() {
 	Convey("Given set of metric types", s.T(), func() {
 		cfg := setupCfg(th.Endpoint(), "me", "secret", "admin")
-		m1 := plugin.PluginMetricType{
-			Namespace_: []string{"intel", "openstack", "keystone", "demo", "users_count"},
+		m1 := plugin.MetricType{
+			Namespace_: core.NewNamespace("intel", "openstack", "keystone", "demo", "users_count"),
 			Config_:    cfg.ConfigDataNode}
-		m2 := plugin.PluginMetricType{
-			Namespace_: []string{"intel", "openstack", "keystone", "total_services_count"},
+		m2 := plugin.MetricType{
+			Namespace_: core.NewNamespace("intel", "openstack", "keystone", "total_services_count"),
 			Config_:    cfg.ConfigDataNode}
 
 		Convey("When ColelctMetrics() is called", func() {
 			collector := New()
 
-			mts, err := collector.CollectMetrics([]plugin.PluginMetricType{m1, m2})
+			mts, err := collector.CollectMetrics([]plugin.MetricType{m1, m2})
 
 			Convey("Then no error should be reported", func() {
 				So(err, ShouldBeNil)
@@ -111,17 +109,17 @@ func (s *CollectorSuite) TestCollectMetrics() {
 			Convey("and proper metric types are returned", func() {
 				metricNames := map[string]interface{}{}
 				for _, m := range mts {
-					ns := strings.Join(m.Namespace(), "/")
+					ns := m.Namespace().String()
 					metricNames[ns] = m.Data()
 				}
 				fmt.Println(metricNames)
 				So(len(mts), ShouldEqual, 2)
 
-				val, ok := metricNames["intel/openstack/keystone/demo/users_count"]
+				val, ok := metricNames["/intel/openstack/keystone/demo/users_count"]
 				So(ok, ShouldBeTrue)
 				So(val, ShouldEqual, 3)
 
-				val, ok = metricNames["intel/openstack/keystone/total_services_count"]
+				val, ok = metricNames["/intel/openstack/keystone/total_services_count"]
 				So(ok, ShouldBeTrue)
 				So(val, ShouldEqual, 4)
 			})
@@ -129,13 +127,13 @@ func (s *CollectorSuite) TestCollectMetrics() {
 	})
 }
 
-func setupCfg(endpoint, user, password, tenant string) plugin.PluginConfigType {
+func setupCfg(endpoint, user, password, tenant string) plugin.ConfigType {
 	node := cdata.NewNode()
 	node.AddItem("admin_endpoint", ctypes.ConfigValueStr{Value: endpoint})
 	node.AddItem("admin_user", ctypes.ConfigValueStr{Value: user})
 	node.AddItem("admin_password", ctypes.ConfigValueStr{Value: password})
 	node.AddItem("admin_tenant", ctypes.ConfigValueStr{Value: tenant})
-	return plugin.PluginConfigType{ConfigDataNode: node}
+	return plugin.ConfigType{ConfigDataNode: node}
 }
 
 func registerRoot() {
