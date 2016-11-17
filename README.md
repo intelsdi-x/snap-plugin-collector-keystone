@@ -1,6 +1,6 @@
-# snap plugin collector - keystone
+# Snap plugin collector - keystone
 
-snap plugin for collecting metrics from OpenStack Keystone module. 
+Snap plugin for collecting metrics from OpenStack Keystone module.
 
 1. [Getting Started](#getting-started)
   * [System Requirements](#system-requirements)
@@ -9,7 +9,7 @@ snap plugin for collecting metrics from OpenStack Keystone module.
   * [Configuration and Usage](configuration-and-usage)
 2. [Documentation](#documentation)
   * [Collected Metrics](#collected-metrics)
-  * [snap's Global Config](#snaps-global-config)
+  * [Snap's Global Config](#snaps-global-config)
   * [Examples](#examples)
   * [Roadmap](#roadmap)
 3. [Community Support](#community-support)
@@ -27,31 +27,33 @@ It can run locally on the host, or in proxy mode (communicating with the host vi
 * Supports Keystone V2 and V3 authorization APIs
  
 ### Operating systems
-All OSs currently supported by snap:
+All OSs currently supported by Snap:
 * Linux/amd64
 
 ### Installation
-#### Download keystone plugin binary:
-You can get the pre-built binaries for your OS and architecture at snap's [Github Releases](https://github.com/intelsdi-x/snap/releases) page.
+#### Download the plugin binary:
+
+You can get the pre-built binaries for your OS and architecture from the plugin's [GitHub Releases](https://github.com/intelsdi-x/snap-plugin-collector-keystone/releases) page. Download the plugin from the latest release and load it into `snapd` (`/opt/snap/plugins` is the default location for Snap packages).
 
 #### To build the plugin binary:
+
 Fork https://github.com/intelsdi-x/snap-plugin-collector-keystone
-
-Clone repo into `$GOPATH/src/github/intelsdi-x/`:
+Clone repo into `$GOPATH/src/github.com/intelsdi-x/`:
 
 ```
-$ git clone https://github.com/<yourGithubID>/snap-plugin-collector-keystone
+$ git clone https://github.com/<yourGithubID>/snap-plugin-collector-keystone.git
 ```
-Build the plugin by running make in repo:
+
+Build the Snap keystone plugin by running make within the cloned repo:
 ```
 $ make
 ```
-This builds the plugin in `/build/rootfs`
+This builds the plugin in `./build/`
 
 ### Configuration and Usage
-* Set up the [snap framework](https://github.com/intelsdi-x/snap/blob/master/README.md#getting-started).
-* Create Global Config, see description in [snap's Global Config] (https://github.com/intelsdi-x/snap-plugin-collector-keystone/blob/master/README.md#snaps-global-config).
-* Load the plugin and create a task, see example in [Examples](https://github.com/intelsdi-x/snap-plugin-collector-keystone/blob/master/README.md#examples).
+* Set up the [Snap framework](https://github.com/intelsdi-x/snap#getting-started).
+* Create Global Config, see description in [Snap's Global Config] (#snaps-global-config).
+* Load the plugin and create a task, see example in [Examples](#examples).
 
 #### Suggestions
 * It is not recommended to set interval for task less than 20 seconds. This may lead to overloading Keystone API with requests.
@@ -69,122 +71,82 @@ intel/openstack/keystone/total_users_count | int | Total number of users
 intel/openstack/keystone/total_endpoints_count | int | Total number of endpoints
 intel/openstack/keystone/total_services_count | int | Total number of services
 
-### snap's Global Config
-Global configuration files are described in [snap's documentation](https://github.com/intelsdi-x/snap/blob/master/docs/SNAPD_CONFIGURATION.md). You have to add section "keystone" in "collector" section and then specify following options:
+### Snap's Global Config
+Global configuration files are described in [Snap's documentation](https://github.com/intelsdi-x/snap/blob/master/docs/SNAPD_CONFIGURATION.md). You have to add section "keystone" in "collector" section and then specify following options:
 - `"admin_endpoint"` - URL for OpenStack Identity admin endpoint (ex. `"http://keystone.public.org:35357"`)
 - `"admin_user"` -  administrator user name
 - `"admin_password"` - administrator password
 - `"admin_tenant"` - administration tenant
 
-Example global configuration file for snap-plugin-collector-keystone plugin (exemplary file in [examples/cfg/] (https://github.com/intelsdi-x/snap-plugin-collector-keystone/blob/master/examples/cfg/)):
-```
-{
-  "control": {
-    "cache_ttl": "5s"
-  },
-  "scheduler": {
-    "default_deadline": "5s",
-    "worker_pool_size": 5
-  },
-  "plugins": {
-    "collector": {
-      "keystone": {
-        "all": {
-          "admin_endpoint": "https://public.fuel.local:35357",
-          "admin_user": "admin",
-          "admin_password": "admin",
-          "admin_tenant": "admin"
-        }
-      }
-    },
-    "publisher": {},
-    "processor": {}
-  }
-}
-```
+Example global configuration file for snap-plugin-collector-keystone plugin (exemplary file in [examples/cfg] (examples/cfg/cfg.json)):
 
 ### Examples
-Example running snap-plugin-collector-keystone plugin and writing data to a file.
+Example of running Snap keystone collector and writing data to file.
 
-Make sure that your `$SNAP_PATH` is set, if not:
+Download an [example Snap global config](examples/cfg/cfg.json) file.
 ```
-$ export SNAP_PATH=<snapDirectoryPath>/build
+$ curl -sfLO https://raw.githubusercontent.com/intelsdi-x/snap-plugin-collector-keystone/master/examples/cfg/cfg.json
 ```
-Other paths to files should be set according to your configuration, using a file you should indicate where it is located.
+Ensure to provide your Keystone instance address and credentials.
 
-Create Global Config, see example in [examples/cfg/] (https://github.com/intelsdi-x/snap-plugin-collector-keystone/blob/master/examples/cfg/).
+Ensure [Snap daemon is running](https://github.com/intelsdi-x/snap#running-snap) with provided configuration file:
+* command line: `snapd -l 1 -t 0 --config cfg.json&`
 
-In one terminal window, open the snap daemon (in this case with logging set to 1,  trust disabled and global configuration saved in cfg.json ):
+Download and load Snap plugins:
 ```
-$ $SNAP_PATH/bin/snapd -l 1 -t 0 --config cfg.json
-```
-In another terminal window:
-
-Load snap-plugin-collector-keystone plugin
-```
-$ $SNAP_PATH/bin/snapctl plugin load snap-plugin-collector-keystone
-```
-Load file plugin for publishing:
-```
-$ $SNAP_PATH/bin/snapctl plugin load $SNAP_PATH/plugin/snap-publisher-file
-```
-See available metrics for your system
-
-```
-$ $SNAP_PATH/bin/snapctl metric list
+$ wget http://snap.ci.snap-telemetry.io/plugins/snap-plugin-collector-keystone/latest/linux/x86_64/snap-plugin-collector-keystone
+$ wget http://snap.ci.snap-telemetry.io/plugins/snap-plugin-publisher-file/latest/linux/x86_64/snap-plugin-publisher-file
+$ chmod 755 snap-plugin-*
+$ snapctl plugin load snap-plugin-collector-keystone
+$ snapctl plugin load snap-plugin-publisher-file
 ```
 
-Create a task manifest file to use snap-plugin-collector-keystone plugin (exemplary files in [examples/tasks/] (https://github.com/intelsdi-x/snap-plugin-collector-keystone/blob/master/examples/tasks/)):
+See all available metrics:
+
 ```
-{
-    "version": 1,
-    "schedule": {
-        "type": "simple",
-        "interval": "60s"
-    },
-    "workflow": {
-        "collect": {
-            "metrics": {
-		        "/intel/openstack/keystone/total_tenants_count": {},
-		        "/intel/openstack/keystone/total_users_count": {},
-		        "/intel/openstack/keystone/total_endpoints_count": {},
-		        "/intel/openstack/keystone/admin/users_count": {}
-           },
-            "config": {
-            },
-            "process": null,
-             "publish": [
-                {
-                    "plugin_name": "file",
-                    "config": {
-                        "file": "/tmp/published_keystone"
-                    }
-                }
-            ]
-        }
-    }
-}
+$ snapctl metric list
 ```
-Create a task:
+
+Download an [example task file](examples/tasks/task.json) and load it:
 ```
-$ $SNAP_PATH/bin/snapctl task create -t examples/tasks/task.json
+$ curl -sfLO https://raw.githubusercontent.com/intelsdi-x/snap-plugin-collector-keystone/master/examples/tasks/task.json
+$ snapctl task create -t task.json
+Using task manifest to create task
+Task created
+ID: 02dd7ff4-8106-47e9-8b86-70067cd0a850
+Name: Task-02dd7ff4-8106-47e9-8b86-70067cd0a850
+State: Running
+```
+
+See realtime output from `snapctl task watch <task_id>` (CTRL+C to exit)
+```
+$ snapctl task watch 02dd7ff4-8106-47e9-8b86-70067cd0a850
+```
+
+This data is published to a file `/tmp/published_keystone` per task specification
+
+Stop task:
+```
+$ snapctl task stop 02dd7ff4-8106-47e9-8b86-70067cd0a850
+Task stopped:
+ID: 02dd7ff4-8106-47e9-8b86-70067cd0a850
 ```
 
 ### Roadmap
 There isn't a current roadmap for this plugin, but it is in active development. As we launch this plugin, we do not have any outstanding requirements for the next release.
 
 ## Community Support
-This repository is one of **many** plugins in **snap**, a powerful telemetry framework. See the full project at http://github.com/intelsdi-x/snap To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support) or visit [snap Gitter channel](https://gitter.im/intelsdi-x/snap).
+This repository is one of **many** plugins in **Snap**, a powerful telemetry framework. See the full project at http://github.com/intelsdi-x/snap.
+
+To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support).
 
 ## Contributing
 We love contributions!
 
 There's more than one way to give back, from examples to blogs to code updates. See our recommended process in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-And **thank you!** Your contribution, through code and participation, is incredibly important to us.
-
 ## License
-[snap](http://github.com/intelsdi-x/snap), along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
+[Snap](http://github.com/intelsdi-x/snap), along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
 
 ## Acknowledgements
 * Author: [Marcin Krolik](https://github.com/marcin-krolik)
