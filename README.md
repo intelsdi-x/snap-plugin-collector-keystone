@@ -85,12 +85,14 @@ Example of running Snap keystone collector and writing data to file.
 
 Download an [example Snap global config](examples/cfg/cfg.json) file.
 ```
-$ curl -sfLO https://raw.githubusercontent.com/intelsdi-x/snap-plugin-collector-keystone/master/examples/cfg/cfg.json
+$ curl -sfLO https://raw.githubusercontent.com/intelsdi-x/snap-plugin-collector-keystone/master/examples/cfg/cfg.json > /etc/snap/snapteld.conf
 ```
 Ensure to provide your Keystone instance address and credentials.
 
 Ensure [Snap daemon is running](https://github.com/intelsdi-x/snap#running-snap) with provided configuration file:
-* command line: `snapteld -l 1 -t 0 --config cfg.json&`
+* initd: `sudo service snap-telemetry start`
+* systemd: `sudo systemctl start snap-telemetry`
+* command line: `sudo snapteld -l 1 -t 0 &`
 
 Download and load Snap plugins:
 ```
