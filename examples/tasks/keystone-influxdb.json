@@ -1,0 +1,33 @@
+{
+    "version": 1,
+    "schedule": {
+        "type": "simple",
+        "interval": "10s"
+    },
+    "workflow": {
+        "collect": {
+            "metrics": {
+                        "/intel/openstack/keystone/total_tenants_count": {},
+                        "/intel/openstack/keystone/total_users_count": {},
+                        "/intel/openstack/keystone/total_endpoints_count": {},
+                        "/intel/openstack/keystone/admin/users_count": {}
+           },
+            "config": {
+            },
+            "process": null,
+            "publish": [
+                {
+                    "plugin_name": "influxdb",
+                    "config": {
+                        "host": "localhost",
+                        "port": 8086,
+                        "database": "test",
+                        "user": "admin",
+                        "password": "admin"
+                    }
+                }
+            ]
+        }
+    }
+}
+

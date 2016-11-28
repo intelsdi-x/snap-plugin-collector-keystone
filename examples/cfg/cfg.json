@@ -1,18 +1,18 @@
 {
-  "control": {},
-  "scheduler": {},
-  "plugins": {
-    "collector": {
-      "keystone": {
-        "all": {
-          "admin_endpoint": "https://public.fuel.local:35357",
-          "admin_user": "admin",
-          "admin_password": "admin",
-          "admin_tenant": "admin"
+  "control": {
+    "plugins": {
+      "collector": {
+        "keystone": {
+          "all": {
+            "admin_endpoint": "http://public.fuel.local:35357/v2.0/",
+            "admin_user": "admin",
+            "admin_password": "admin",
+            "admin_tenant": "admin"
+          }
         }
-      }
-    },
-    "publisher": {},
-    "processor": {}
+      },
+      "publisher": {},
+      "processor": {}
+    }
   }
 }
