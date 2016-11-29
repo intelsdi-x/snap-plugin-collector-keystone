@@ -33,7 +33,7 @@ All OSs currently supported by Snap:
 ### Installation
 #### Download the plugin binary:
 
-You can get the pre-built binaries for your OS and architecture from the plugin's [GitHub Releases](https://github.com/intelsdi-x/snap-plugin-collector-keystone/releases) page. Download the plugin from the latest release and load it into `snapd` (`/opt/snap/plugins` is the default location for Snap packages).
+You can get the pre-built binaries for your OS and architecture from the plugin's [GitHub Releases](https://github.com/intelsdi-x/snap-plugin-collector-keystone/releases) page. Download the plugin from the latest release and load it into `snapteld` (`/opt/snap/plugins` is the default location for Snap packages).
 
 #### To build the plugin binary:
 
@@ -83,34 +83,36 @@ Example global configuration file for snap-plugin-collector-keystone plugin (exe
 ### Examples
 Example of running Snap keystone collector and writing data to file.
 
-Download an [example Snap global config](examples/cfg/cfg.json) file.
+Download an [example Snap global config](examples/cfg/cfg.json) file (for more details, read about [snapteld Configuration File](https://github.com/IRCody/snap/blob/31347d829dd3ae57da631904a38f1649972670cb/docs/SNAPTELD_CONFIGURATION.md)).
 ```
-$ curl -sfLO https://raw.githubusercontent.com/intelsdi-x/snap-plugin-collector-keystone/master/examples/cfg/cfg.json
+$ curl -sfLO https://raw.githubusercontent.com/intelsdi-x/snap-plugin-collector-keystone/master/examples/cfg/cfg.json > /etc/snap/snapteld.conf
 ```
 Ensure to provide your Keystone instance address and credentials.
 
 Ensure [Snap daemon is running](https://github.com/intelsdi-x/snap#running-snap) with provided configuration file:
-* command line: `snapd -l 1 -t 0 --config cfg.json&`
+* initd: `sudo service snap-telemetry start`
+* systemd: `sudo systemctl start snap-telemetry`
+* command line: `sudo snapteld -l 1 -t 0 &`
 
 Download and load Snap plugins:
 ```
 $ wget http://snap.ci.snap-telemetry.io/plugins/snap-plugin-collector-keystone/latest/linux/x86_64/snap-plugin-collector-keystone
 $ wget http://snap.ci.snap-telemetry.io/plugins/snap-plugin-publisher-file/latest/linux/x86_64/snap-plugin-publisher-file
 $ chmod 755 snap-plugin-*
-$ snapctl plugin load snap-plugin-collector-keystone
-$ snapctl plugin load snap-plugin-publisher-file
+$ snaptel plugin load snap-plugin-collector-keystone
+$ snaptel plugin load snap-plugin-publisher-file
 ```
 
 See all available metrics:
 
 ```
-$ snapctl metric list
+$ snaptel metric list
 ```
 
 Download an [example task file](examples/tasks/task.json) and load it:
 ```
 $ curl -sfLO https://raw.githubusercontent.com/intelsdi-x/snap-plugin-collector-keystone/master/examples/tasks/task.json
-$ snapctl task create -t task.json
+$ snaptel task create -t task.json
 Using task manifest to create task
 Task created
 ID: 02dd7ff4-8106-47e9-8b86-70067cd0a850
@@ -118,16 +120,16 @@ Name: Task-02dd7ff4-8106-47e9-8b86-70067cd0a850
 State: Running
 ```
 
-See realtime output from `snapctl task watch <task_id>` (CTRL+C to exit)
+See realtime output from `snaptel task watch <task_id>` (CTRL+C to exit)
 ```
-$ snapctl task watch 02dd7ff4-8106-47e9-8b86-70067cd0a850
+$ snaptel task watch 02dd7ff4-8106-47e9-8b86-70067cd0a850
 ```
 
 This data is published to a file `/tmp/published_keystone` per task specification
 
 Stop task:
 ```
-$ snapctl task stop 02dd7ff4-8106-47e9-8b86-70067cd0a850
+$ snaptel task stop 02dd7ff4-8106-47e9-8b86-70067cd0a850
 Task stopped:
 ID: 02dd7ff4-8106-47e9-8b86-70067cd0a850
 ```
