@@ -83,7 +83,7 @@ Example global configuration file for snap-plugin-collector-keystone plugin (exe
 ### Examples
 Example of running Snap keystone collector and writing data to file.
 
-Download an [example Snap global config](examples/cfg/cfg.json) file.
+Download an [example Snap global config](examples/cfg/cfg.json) file (for more details, read about [snapteld Configuration File](https://github.com/IRCody/snap/blob/31347d829dd3ae57da631904a38f1649972670cb/docs/SNAPTELD_CONFIGURATION.md)).
 ```
 $ curl -sfLO https://raw.githubusercontent.com/intelsdi-x/snap-plugin-collector-keystone/master/examples/cfg/cfg.json > /etc/snap/snapteld.conf
 ```
