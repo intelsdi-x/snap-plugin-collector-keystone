@@ -1,0 +1,27 @@
+package: github.com/intelsdi-x/snap-plugin-collector-keystone
+import:
+- package: github.com/intelsdi-x/snap
+  version: ^0.16
+  subpackages:
+  - control/plugin
+  - control/plugin/cpolicy
+  - core
+- package: github.com/mitchellh/mapstructure
+- package: github.com/intelsdi-x/snap-plugin-utilities
+  subpackages:
+  - config
+  - str
+- package: github.com/rackspace/gophercloud
+  subpackages:
+  - openstack
+  - openstack/identity/v2/tenants
+  - openstack/identity/v2/users
+  - openstack/identity/v3/endpoints
+  - openstack/identity/v3/services
+testImport:
+- package: github.com/smartystreets/goconvey
+  subpackages:
+  - convey
+- package: github.com/stretchr/testify
+  subpackages:
+  - suite
