@@ -15,6 +15,8 @@ limitations under the License.
 package openstack
 
 import (
+	"strings"
+
 	"github.com/rackspace/gophercloud"
 	"github.com/rackspace/gophercloud/openstack"
 	"github.com/rackspace/gophercloud/openstack/identity/v2/tenants"
@@ -55,8 +57,13 @@ func GetAllTenants(provider *gophercloud.ProviderClient) ([]types.Tenant, error)
 // GetAllUsers is used to retrieve list of available users
 func GetAllUsers(provider *gophercloud.ProviderClient) ([]types.User, error) {
 	userList := []types.User{}
+	var client *gophercloud.ServiceClient
 
-	client := openstack.NewIdentityV2(provider)
+	if strings.Contains(provider.IdentityEndpoint, "v3") {
+		client = openstack.NewIdentityV3(provider)
+	} else {
+		client = openstack.NewIdentityV2(provider)
+	}
 
 	pager := users.List(client)
 	page, err := pager.AllPages()
@@ -144,8 +151,13 @@ func GetAllEndpoints(provider *gophercloud.ProviderClient) ([]types.Endpoint, er
 
 func GetUsersPerTenant(provider *gophercloud.ProviderClient, tenantList []types.Tenant) (map[string]int, error) {
 	tenantUsersCount := map[string]int{}
+	var client *gophercloud.ServiceClient
 
-	client := openstack.NewIdentityV2(provider)
+	if strings.Contains(provider.IdentityEndpoint, "v3") {
+		client = openstack.NewIdentityV3(provider)
+	} else {
+		client = openstack.NewIdentityV2(provider)
+	}
 
 	for _, tnt := range tenantList {
 		usrs, err := tenantusers.Get(client, tnt.ID).Extract()
