@@ -33,7 +33,7 @@ import (
 
 const (
 	name    = "keystone"
-	version = 2
+	version = 3
 	plgtype = plugin.CollectorPluginType
 	vendor  = "intel"
 	fs      = "openstack"
@@ -55,6 +55,8 @@ func New() *collector {
 // It returns error in case retrieval was not successful
 func (c *collector) GetMetricTypes(cfg plugin.ConfigType) ([]plugin.MetricType, error) {
 	mts := []plugin.MetricType{}
+	domain_name := ""
+	domain_id := ""
 	items, err := config.GetConfigItems(cfg, "admin_endpoint", "admin_user", "admin_password", "admin_tenant")
 	if err != nil {
 		return nil, err
@@ -64,9 +66,17 @@ func (c *collector) GetMetricTypes(cfg plugin.ConfigType) ([]plugin.MetricType, 
 	user := items["admin_user"].(string)
 	password := items["admin_password"].(string)
 	tenant := items["admin_tenant"].(string)
+	dom_name, _ := config.GetConfigItem(cfg, "domain_name")
+	dom_id, _ := config.GetConfigItem(cfg, "domain_id")
+	if dom_name != nil {
+		domain_name = dom_name.(string)
+	}
+	if dom_id != nil {
+		domain_id = dom_id.(string)
+	}
 
 	if c.provider == nil {
-		c.provider, err = openstackintel.Authenticate(endpoint, user, password, tenant)
+		c.provider, err = openstackintel.Authenticate(endpoint, user, password, tenant, domain_name, domain_id)
 		if err != nil {
 			return nil, err
 		}
@@ -99,6 +109,8 @@ func (c *collector) GetMetricTypes(cfg plugin.ConfigType) ([]plugin.MetricType, 
 // CollectMetrics returns list of requested metric values
 // It returns error in case retrieval was not successful
 func (c *collector) CollectMetrics(metricTypes []plugin.MetricType) ([]plugin.MetricType, error) {
+	domain_name := ""
+	domain_id := ""
 	items, err := config.GetConfigItems(metricTypes[0], "admin_endpoint", "admin_user", "admin_password", "admin_tenant")
 	if err != nil {
 		return nil, err
@@ -108,9 +120,17 @@ func (c *collector) CollectMetrics(metricTypes []plugin.MetricType) ([]plugin.Me
 	user := items["admin_user"].(string)
 	password := items["admin_password"].(string)
 	tenant := items["admin_tenant"].(string)
+	dom_name, _ := config.GetConfigItem(metricTypes[0], "domain_name")
+	dom_id, _ := config.GetConfigItem(metricTypes[0], "domain_id")
+	if dom_name != nil {
+		domain_name = dom_name.(string)
+	}
+	if dom_id != nil {
+		domain_id = dom_id.(string)
+	}
 
 	if c.provider == nil {
-		c.provider, err = openstackintel.Authenticate(endpoint, user, password, tenant)
+		c.provider, err = openstackintel.Authenticate(endpoint, user, password, tenant, domain_name, domain_id)
 		if err != nil {
 			return nil, err
 		}

@@ -57,7 +57,7 @@ func (s *KeystoneSuite) TestGetAllTenants() {
 	Convey("Given list of OpenStack tenants is requested", s.T(), func() {
 
 		Convey("When authentication is required", func() {
-			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant")
+			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant", "", "")
 			th.AssertNoErr(s.T(), err)
 			th.CheckEquals(s.T(), s.Token, provider.TokenID)
 
@@ -81,7 +81,7 @@ func (s *KeystoneSuite) TestGetAllUsers() {
 	Convey("Given list of OpenStack users is requested", s.T(), func() {
 
 		Convey("When authentication is required", func() {
-			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant")
+			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant", "", "")
 			th.AssertNoErr(s.T(), err)
 			th.CheckEquals(s.T(), s.Token, provider.TokenID)
 
@@ -105,7 +105,7 @@ func (s *KeystoneSuite) TestGetAllServices() {
 	Convey("Given list of OpenStack services is requested", s.T(), func() {
 
 		Convey("When authentication is required", func() {
-			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant")
+			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant", "", "")
 			th.AssertNoErr(s.T(), err)
 			th.CheckEquals(s.T(), s.Token, provider.TokenID)
 
@@ -129,7 +129,7 @@ func (s *KeystoneSuite) TestGetAllEndpoints() {
 	Convey("Given list of OpenStack endpoints is requested", s.T(), func() {
 
 		Convey("When authentication is required", func() {
-			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant")
+			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant", "", "")
 			th.AssertNoErr(s.T(), err)
 			th.CheckEquals(s.T(), s.Token, provider.TokenID)
 
@@ -153,7 +153,7 @@ func (s *KeystoneSuite) TestGetTenantUsers() {
 	Convey("Given list of OpenStack users for particular tenant is requested", s.T(), func() {
 
 		Convey("When authentication is required", func() {
-			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant")
+			provider, err := Authenticate(th.Endpoint(), "me", "secret", "tenant", "", "")
 			th.AssertNoErr(s.T(), err)
 			th.CheckEquals(s.T(), s.Token, provider.TokenID)
 

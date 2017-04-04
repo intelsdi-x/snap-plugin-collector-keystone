@@ -77,6 +77,9 @@ Global configuration files are described in [Snap's documentation](https://githu
 - `"admin_user"` -  administrator user name
 - `"admin_password"` - administrator password
 - `"admin_tenant"` - administration tenant
+If you're using authentication API in v3 you need to set one of those two configuration options:
+- `"domain_name"` - domain name
+- `"domain_id"` - domain name
 
 Example global configuration file for snap-plugin-collector-keystone plugin (exemplary file in [examples/cfg] (examples/cfg/cfg.json)):
 
