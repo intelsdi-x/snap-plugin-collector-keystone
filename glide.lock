@@ -1,8 +1,8 @@
 hash: 2b13475db9db4068ac43d70ab1e530e11d1f9701ba589badda8f6ee8e86fb221
-updated: 2016-11-29T12:13:46.17592074+01:00
+updated: 2017-10-31T07:40:21.60417785+08:00
 imports:
 - name: github.com/intelsdi-x/snap
-  version: cd9c1a86ea2a9d5821c6db91e4324f6caf6ba85c
+  version: 79e1dd457d77c985491c2f4746cbc425fb3dc2dd
   subpackages:
   - control/plugin
   - control/plugin/cpolicy
@@ -17,12 +17,12 @@ imports:
   - pkg/stringutils
   - scheduler/wmap
 - name: github.com/intelsdi-x/snap-plugin-utilities
-  version: 3c37e3965f3fc2f24714779d3bae7ba7032b87a9
+  version: 53c6d26990688f3f277511f5501518167f4cb798
   subpackages:
   - config
   - str
 - name: github.com/mitchellh/mapstructure
-  version: f3009df150dadf309fdee4a54ed65c124afad715
+  version: 06020f85339e21b2478f756a78e295255ffa4d6a
 - name: github.com/rackspace/gophercloud
   version: e00690e87603abe613e9f02c816c7c4bef82e063
   subpackages:
@@ -39,7 +39,7 @@ imports:
   - testhelper/client
 - name: github.com/robfig/cron
   version: 32d9c273155a0506d27cf73dd1246e86a470997e
-- name: github.com/Sirupsen/logrus
+- name: github.com/sirupsen/logrus
   version: be52937128b38f1d99787bb476c789e2af1147f1
 - name: golang.org/x/sys
   version: c8bc69bc2db9c57ccf979550bc69655df5039a8a
@@ -49,11 +49,11 @@ imports:
   version: c1cd2254a6dd314c9d73c338c12688c9325d85c6
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 04cdfd42973bb9c8589fd6a731800cf222fde1a9
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
 - name: github.com/gopherjs/gopherjs
-  version: e34a5cd6a1bc7c4fde759f2d3039852fc68b5fcc
+  version: 4b53e1bddba0e2f734514aeb6c02db652f4c6fe8
   subpackages:
   - js
 - name: github.com/jtolds/gls
@@ -63,18 +63,18 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/smartystreets/assertions
-  version: e60cfa771e3f4d18723a4119f1833898c9c62066
+  version: 4ea54c1f28ad3ae597e76607dea3871fa177e263
   subpackages:
   - internal/go-render/render
   - internal/oglematchers
 - name: github.com/smartystreets/goconvey
-  version: 3c2572876754c4669ae7417b219f0b30a29b32c7
+  version: 9e8dc3f972df6c8fcc0375ef492c24d0bb204857
   subpackages:
   - convey
   - convey/gotest
   - convey/reporting
 - name: github.com/stretchr/testify
-  version: 18a02ba4a312f95da08ff4cfc0055750ce50ae9e
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
   subpackages:
   - assert
   - require
