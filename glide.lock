@@ -1,6 +1,8 @@
-hash: 2b13475db9db4068ac43d70ab1e530e11d1f9701ba589badda8f6ee8e86fb221
-updated: 2017-10-31T07:40:21.60417785+08:00
+hash: 630b9b0201410d7c4a4378bd1ff54f13c6b4ed7b258f66a12d51c4c6b831ee98
+updated: 2017-10-31T09:37:19.372096312+08:00
 imports:
+- name: github.com/asaskevich/govalidator
+  version: 9699ab6b38bee2e02cd3fe8b99ecf67665395c96
 - name: github.com/intelsdi-x/snap
   version: 79e1dd457d77c985491c2f4746cbc425fb3dc2dd
   subpackages:
@@ -13,6 +15,7 @@ imports:
   - core/ctypes
   - core/serror
   - pkg/ctree
+  - pkg/fileutils
   - pkg/schedule
   - pkg/stringutils
   - scheduler/wmap
